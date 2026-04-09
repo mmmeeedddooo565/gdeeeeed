@@ -274,7 +274,7 @@ fun LoginScreen(auth: AuthStore, activity: ComponentActivity, onLogin: () -> Uni
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(onSearch: () -> Unit, onAdd: () -> Unit) {
     Scaffold(
