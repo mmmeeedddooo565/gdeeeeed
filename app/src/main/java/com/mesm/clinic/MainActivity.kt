@@ -1,6 +1,8 @@
 @file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 package com.mesm.clinic
-
+import androidx.compose.ui.input.pointer.detectTapGestures
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material.icons.filled.Close
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -582,6 +584,10 @@ fun ViewScreen(vm: ClinicViewModel, onBack: () -> Unit, onEdit: () -> Unit, onDe
 
     var caseIndex by remember { mutableIntStateOf(0) }
     var rxIndex by remember { mutableIntStateOf(0) }
+    var fullscreenImages by remember { mutableStateOf<List<CaseImageEntity>>(emptyList()) }
+    var fullscreenIndex by remember { mutableIntStateOf(0) }
+    var showFullscreen by remember { mutableStateOf(false) }
+
     val caseImages = c.images.filter { it.kind == "case" }
     val rxImages = c.images.filter { it.kind == "rx" }
 
@@ -635,16 +641,104 @@ fun ViewScreen(vm: ClinicViewModel, onBack: () -> Unit, onEdit: () -> Unit, onDe
                     }
                 }
             }
+
             item { Text("صور الحالة", fontWeight = FontWeight.Bold) }
-            item { SwipeCarousel(caseImages, caseIndex, { caseIndex = it }) }
+
+            item {
+                SwipeCarousel(
+                    images = caseImages,
+                    index = caseIndex,
+                    onIndexChange = { caseIndex = it },
+                    onOpenFullscreen = { images, index ->
+                        fullscreenImages = images
+                        fullscreenIndex = index
+                        showFullscreen = true
+                    }
+                )
+            }
+
             item { Text("صور الروشتة", fontWeight = FontWeight.Bold) }
-            item { SwipeCarousel(rxImages, rxIndex, { rxIndex = it }) }
+
+            item {
+                SwipeCarousel(
+                    images = rxImages,
+                    index = rxIndex,
+                    onIndexChange = { rxIndex = it },
+                    onOpenFullscreen = { images, index ->
+                        fullscreenImages = images
+                        fullscreenIndex = index
+                        showFullscreen = true
+                    }
+                )
+            }
+        }
+    }
+
+    if (showFullscreen && fullscreenImages.isNotEmpty()) {
+        Dialog(onDismissRequest = { showFullscreen = false }) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
+                        .background(Color.Black)
+                        .pointerInput(fullscreenImages, fullscreenIndex) {
+                            detectHorizontalDragGestures { _, dragAmount ->
+                                if (dragAmount < -25) {
+                                    fullscreenIndex = (fullscreenIndex + 1) % fullscreenImages.size
+                                }
+                                if (dragAmount > 25) {
+                                    fullscreenIndex =
+                                        (fullscreenIndex - 1 + fullscreenImages.size) % fullscreenImages.size
+                                }
+                            }
+                        }
+                ) {
+                    AsyncImage(
+                        model = Uri.parse(fullscreenImages[fullscreenIndex].uri),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                    Text(
+                        text = "${fullscreenIndex + 1} / ${fullscreenImages.size}",
+                        color = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(12.dp)
+                            .background(
+                                Color.Black.copy(alpha = 0.4f),
+                                RoundedCornerShape(50)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+
+                    IconButton(
+                        onClick = { showFullscreen = false },
+                        modifier = Modifier.align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun SwipeCarousel(images: List<CaseImageEntity>, index: Int, onIndexChange: (Int) -> Unit) {
+fun SwipeCarousel(
+    images: List<CaseImageEntity>,
+    index: Int,
+    onIndexChange: (Int) -> Unit,
+    onOpenFullscreen: (List<CaseImageEntity>, Int) -> Unit
+) {
     if (images.isEmpty()) {
         Card {
             Box(
@@ -674,8 +768,15 @@ fun SwipeCarousel(images: List<CaseImageEntity>, index: Int, onIndexChange: (Int
             AsyncImage(
                 model = Uri.parse(images[index].uri),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(images, index) {
+                        detectTapGestures {
+                            onOpenFullscreen(images, index)
+                        }
+                    }
             )
+
             Text(
                 text = "${index + 1} / ${images.size}",
                 modifier = Modifier
