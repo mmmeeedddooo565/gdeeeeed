@@ -7,13 +7,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -159,6 +159,7 @@ fun AppRoot(repo: ClinicRepository, auth: AuthStore, activity: ComponentActivity
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(auth: AuthStore, activity: ComponentActivity, onLogin: () -> Unit) {
     var username by rememberSaveable { mutableStateOf(auth.username()) }
@@ -292,6 +293,7 @@ fun HomeScreen(onSearch: () -> Unit, onAdd: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActionCard(
     title: String,
@@ -539,7 +541,7 @@ fun ImagesScreen(vm: ClinicViewModel, caseId: Long, onBack: () -> Unit, onDone: 
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun ImageGrid(images: List<CaseImageEntity>, onDelete: (CaseImageEntity) -> Unit) {
     if (images.isEmpty()) {
