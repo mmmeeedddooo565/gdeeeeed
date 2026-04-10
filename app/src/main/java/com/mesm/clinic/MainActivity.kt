@@ -1,6 +1,6 @@
 @file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 package com.mesm.clinic
-import androidx.compose.ui.input.pointer.detectTapGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material.icons.filled.Close
 import android.net.Uri
